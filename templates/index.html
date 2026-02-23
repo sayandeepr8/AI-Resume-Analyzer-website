@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI-powered resume analyzer that scores your resume against job descriptions using NLP. Get ATS compatibility scores, skill gap analysis, and actionable optimization tips." />
+  <title>AI Resume Analyzer — ATS Match Scorer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="hero-badge">🤖 AI-Powered Analysis</div>
+    <h1>Resume Analyzer &amp; ATS Scorer</h1>
+    <p>Upload your resume and paste a job description to get an instant ATS compatibility score with actionable insights.</p>
+  </header>
+
+  <!-- ============ INPUT SECTION ============ -->
+  <section class="input-section glass-card" id="input-section">
+    <form id="analyze-form">
+      <div class="input-grid">
+
+        <!-- Upload -->
+        <div class="input-group">
+          <label><span class="icon">📄</span> Resume (PDF)</label>
+          <div class="upload-zone" id="upload-zone">
+            <span class="upload-icon">☁️</span>
+            <div class="upload-text"><strong>Click to upload</strong> or drag &amp; drop</div>
+            <div class="upload-text" style="font-size:.8rem;margin-top:.3rem;color:var(--text-muted)">PDF files up to 16 MB</div>
+            <input type="file" id="resume-file" accept=".pdf" />
+          </div>
+          <div class="file-name" id="file-name"></div>
+        </div>
+
+        <!-- Job Description -->
+        <div class="input-group">
+          <label><span class="icon">💼</span> Job Description</label>
+          <textarea
+            class="jd-textarea"
+            id="job-description"
+            placeholder="Paste the full job description here…"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Role selector + button -->
+      <div class="role-row">
+        <label style="color:var(--text-secondary);font-weight:600;font-size:.9rem">
+          <span class="icon">🎯</span> Target Role
+        </label>
+        <select class="role-select" id="role-select">
+          <option value="">Auto-detect / General</option>
+          <option value="Data Scientist">Data Scientist</option>
+          <option value="ML Engineer">ML Engineer</option>
+          <option value="Backend Developer">Backend Developer</option>
+          <option value="Frontend Developer">Frontend Developer</option>
+          <option value="Full Stack Developer">Full Stack Developer</option>
+          <option value="DevOps Engineer">DevOps Engineer</option>
+        </select>
+
+        <button type="submit" class="btn-analyze" id="btn-analyze">
+          <span class="spinner"></span>
+          <span class="btn-text">🔍 Analyze Match</span>
+        </button>
+      </div>
+    </form>
+
+    <div class="error-msg" id="error-msg"></div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section id="results-section">
+
+    <!-- ATS Score -->
+    <div class="glass-card score-card">
+      <div class="score-gauge">
+        <svg viewBox="0 0 160 160">
+          <circle class="gauge-bg" cx="80" cy="80" r="72" />
+          <circle class="gauge-fill" id="gauge-fill" cx="80" cy="80" r="72" />
+        </svg>
+        <div class="score-label">
+          <span class="score-value" id="score-value">0</span>
+          <span class="score-unit">ATS Score</span>
+        </div>
+      </div>
+      <div class="score-info">
+        <h3>ATS Compatibility Score</h3>
+        <p id="score-info">Analyzing…</p>
+        <span class="score-badge" id="score-badge"></span>
+      </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Skill Gap Analysis -->
+      <div class="glass-card">
+        <div class="section-title"><span class="icon">🧠</span> Skill Gap Analysis</div>
+        <div id="skill-gap-content"></div>
+        <div class="skill-match-bar">
+          <div class="skill-match-bar-fill" id="skill-match-fill" style="width:0%"></div>
+        </div>
+        <div style="text-align:right;margin-top:.35rem;font-size:.8rem;color:var(--text-muted)" id="skill-match-pct"></div>
+      </div>
+
+      <!-- Section-Wise Scoring -->
+      <div class="glass-card">
+        <div class="section-title"><span class="icon">📊</span> Section-Wise Scoring</div>
+        <div class="section-bar-group">
+          <div class="section-bar-item">
+            <label><span>Skills</span><span id="val-skills">0%</span></label>
+            <div class="section-bar"><div class="section-bar-fill bar-skills" id="bar-skills" style="width:0%"></div></div>
+          </div>
+          <div class="section-bar-item">
+            <label><span>Experience</span><span id="val-experience">0%</span></label>
+            <div class="section-bar"><div class="section-bar-fill bar-experience" id="bar-experience" style="width:0%"></div></div>
+          </div>
+          <div class="section-bar-item">
+            <label><span>Projects</span><span id="val-projects">0%</span></label>
+            <div class="section-bar"><div class="section-bar-fill bar-projects" id="bar-projects" style="width:0%"></div></div>
+          </div>
+          <div class="section-bar-item">
+            <label><span>Education</span><span id="val-education">0%</span></label>
+            <div class="section-bar"><div class="section-bar-fill bar-education" id="bar-education" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Keyword Density -->
+      <div class="glass-card full-width">
+        <div class="section-title"><span class="icon">📈</span> Keyword Density Analysis</div>
+        <table class="kw-table">
+          <thead>
+            <tr><th>Keyword</th><th>Count in Resume</th><th>Status</th></tr>
+          </thead>
+          <tbody id="kw-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Before / After -->
+      <div class="glass-card full-width">
+        <div class="section-title"><span class="icon">🔁</span> Before vs After Optimization</div>
+        <div class="before-after">
+          <div class="ba-card">
+            <h4>Current Score</h4>
+            <div class="ba-score before" id="ba-before">0</div>
+          </div>
+          <div class="ba-arrow">→</div>
+          <div class="ba-card">
+            <h4>Optimized Score</h4>
+            <div class="ba-score after" id="ba-after">0</div>
+          </div>
+        </div>
+        <ul class="tips-list" id="tips-list"></ul>
+      </div>
+
+      <!-- Recruiter View -->
+      <div class="glass-card">
+        <div class="section-title"><span class="icon">🧑‍💼</span> Recruiter View</div>
+        <div class="recruiter-decision">
+          <div class="recruiter-verdict" id="recruiter-verdict">—</div>
+          <div class="recruiter-band" id="recruiter-band"></div>
+        </div>
+        <div class="recruiter-cols">
+          <div class="recruiter-col">
+            <h4 style="color:var(--accent-red)">🚩 Red Flags</h4>
+            <ul class="flag-list" id="red-flags"></ul>
+          </div>
+          <div class="recruiter-col">
+            <h4 style="color:var(--accent-green)">✨ Strengths</h4>
+            <ul class="flag-list" id="strengths"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explainable AI -->
+      <div class="glass-card">
+        <div class="section-title"><span class="icon">🔍</span> Explainable AI Panel</div>
+        <div class="explainer-list" id="explainer-list"></div>
+      </div>
+
+    </div><!-- /dashboard-grid -->
+
+  </section>
+
+  <footer class="footer">
+    Built with ❤️ using NLP &amp; TF-IDF · AI Resume Analyzer
+  </footer>
+
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
